@@ -77,3 +77,12 @@ comparaison <- data %>%
   filter(UAI %in% c("0110810W", "0040524Y"))
 ```
 
+# Chargement des bases 
+
+```{r}
+ips <- read_delim("DEPP/fr-en-ips-colleges-ap2023.csv", delim = ";", 
+                  escape_double = FALSE, trim_ws = TRUE)
+age <- read_delim("DEPP/fr-en-age_eleves_entree_sixieme.csv",  delim = ";", 
+                  escape_double = FALSE, trim_ws = TRUE)
+```
+
