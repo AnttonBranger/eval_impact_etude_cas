@@ -1,0 +1,79 @@
+---
+title: "DEPP"
+author: "BRANGER Antton"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+rm(list = ls())
+```
+
+Chargement des packages
+```{r}
+library(tidyverse)
+```
+
+Importation des données
+```{r}
+data <- read.csv2("DEPP/fr-en-indicateurs-valeur-ajoutee-colleges.csv", sep = ";") %>% 
+  mutate(Code.département = as.integer(Code.département), 
+         Taux.de.réussite.G = as.numeric(Taux.de.réussite.G),
+         VA.du.taux.de.réussite.G = as.numeric(VA.du.taux.de.réussite.G),
+         Taux.de.réussite.P = as.numeric(Taux.de.réussite.P),
+         Note.à.l.écrit.G = as.numeric(Note.à.l.écrit.G),
+         VA.de.la.note.G = as.numeric(VA.de.la.note.G),
+         Note.à.l.écrit.P = as.numeric(Note.à.l.écrit.P),
+         Taux.d.accès.6eme.3eme = as.numeric(Taux.d.accès.6eme.3eme),
+         Part.présents.3eme.ordinaire.total = as.numeric(Part.présents.3eme.ordinaire.total),
+         Part.présents.3eme.ordinaire.G = as.numeric(Part.présents.3eme.ordinaire.G),
+         Part.présents.3eme.ordinaire.P = as.numeric(Part.présents.3eme.ordinaire.P),
+         Part.présents.3eme.segpa.total = as.numeric(Part.présents.3eme.segpa.total))
+summary(data)
+```
+
+# Nombre de lauréats à la série générale du brevet selon la mention
+
+```{r}
+tableau_dplyr <- data %>%
+  filter(Session == 2022) %>% 
+  summarise(
+    TB = sum(Nb.mentions.TB.G, na.rm = TRUE),
+    B = sum(Nb.mentions.B.G, na.rm = TRUE),
+    AB = sum(Nb.mentions.AB.G, na.rm = TRUE),
+    Total = sum(Nb.mentions.global.G, na.rm = TRUE)
+  ) %>%
+  pivot_longer(cols = everything(), names_to = "Mention", values_to = "Nombre") %>%
+  # Calcul du pourcentage
+  mutate(Pourcentage = round(Nombre / Nombre[Mention == "Total"] * 100, 2))
+
+# Affichage
+print(tableau_dplyr)
+```
+
+# Note moyenne aux épreuves écrite du brevet des candidats à la série générale par secteurs d'enseignement
+
+```{r}
+moyenne_par_secteur <- data %>%
+  group_by(Secteur) %>%
+  summarise(
+    Moyenne_Ecrit = mean(Note.à.l.écrit.G, na.rm = TRUE),
+    Effectif = n()
+  ) %>%
+  arrange(desc(Moyenne_Ecrit)) # Trie du plus performant au moins performant
+
+# Affichage du résultat
+print(moyenne_par_secteur)
+```
+
+# Comparaison des deux collèges
+
+```{r}
+comparaison <- data %>% 
+  filter(UAI %in% c("0110810W", "0040524Y"))
+```
+
